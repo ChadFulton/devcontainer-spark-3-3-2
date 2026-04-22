@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/devcontainers/python:3.12-bookworm
+
+# 1. Install Java 17
+ARG TARGETARCH
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+    openjdk-17-jdk \
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-${TARGETARCH}"
+
+# 2. Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /workspace
+
+RUN chown vscode:vscode /workspace
+
+USER vscode
+
+COPY .python-version pyproject.toml uv.lock ./
+ENV UV_CACHE_DIR=/home/vscode/.cache/uv
+
+RUN uv sync --frozen --no-install-project
