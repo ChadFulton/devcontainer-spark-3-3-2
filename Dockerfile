@@ -18,7 +18,10 @@ RUN chown vscode:vscode /workspace
 
 USER vscode
 
-COPY .python-version pyproject.toml uv.lock ./
 ENV UV_CACHE_DIR=/home/vscode/.cache/uv
+ENV UV_PROJECT_ENVIRONMENT=/home/vscode/.venv
 
-RUN uv sync --frozen --no-install-project
+RUN --mount=type=bind,source=.python-version,target=.python-version \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    uv sync --frozen --no-install-project
